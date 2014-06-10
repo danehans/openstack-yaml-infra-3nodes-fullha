@@ -1,0 +1,167 @@
+hosts:
+  install-server:
+    profile: puppetmaster
+    ip: 192.168.220.254
+  openstack1:
+    profile: all-rbdkey
+    ip: 192.168.220.51
+    config:
+      cloud::storage::rbd::public_network: "%{hiera('ceph_public_network')}"
+      cloud::storage::rbd::cluster_network: "%{hiera('ceph_cluster_network')}"
+      cloud::storage::rbd::osd::devices: "%{hiera('ceph_osd_devices')}"
+      cloud::loadbalancer::keepalived_state: BACKUP
+      cloud::loadbalancer::keepalived_priority: 49
+      cloud::storage::rbd::pools::setup_pools: true
+      cloud::object::storage::swift_zone: 1
+  openstack2:
+    profile: all-osd
+    ip: 192.168.220.52
+    config:
+      cloud::storage::rbd::public_network: "%{hiera('ceph_public_network')}"
+      cloud::storage::rbd::cluster_network: "%{hiera('ceph_cluster_network')}"
+      cloud::storage::rbd::osd::devices: "%{hiera('ceph_osd_devices')}"
+      cloud::loadbalancer::keepalived_state: BACKUP
+      cloud::loadbalancer::keepalived_priority: 49
+      cloud::object::storage::swift_zone: 2
+  openstack3:
+    profile: all-l3
+    ip: 192.168.220.53
+    config:
+      cloud::loadbalancer::keepalived_state: MASTER
+      cloud::loadbalancer::keepalived_priority: 50
+      cloud::object::storage::swift_zone: 3
+
+config:
+  domain: dmz-pod2.lab
+  user: jenkins
+  puppet_master: install-server
+  parallel_steps: 2|4|5
+  region: sjc
+  dns_ips: 192.168.26.186
+  vip_public_fqdn: control.dmz-pod2.lab
+  vip_public_ip: 192.168.220.40
+  vip_admin_ip: 192.168.220.40
+  vip_admin_fqdn: control.dmz-pod2.lab
+  vip_internal_fqdn: control.dmz-pod2.lab
+
+  public_network: 192.168.220.0/24
+  internal_network: 192.168.220.0/24
+  admin_network: 192.168.220.0/24
+  storage_network: 192.168.220.0/24
+  
+  ntp_servers:
+    - ntp.esl.cisco.com
+
+  root_password: ubuntu
+  
+  public_netif: eth0
+  internal_netif: eth0
+  admin_netif: eth0
+  storage_netif: eth0
+  lb_public_netif: eth0
+  lb_internal_netif: eth0
+  external_netif: eth1
+
+  keystone_db_user: keystone
+  keystone_db_password: password
+  ks_admin_email: os_admin@cisco.com
+  ks_admin_password: password
+  ks_admin_tenant: admin
+  ks_admin_token: password
+
+  swift_api: true
+  ks_swift_dispersion_password: password
+  ks_swift_password: password
+  swift_hash_suffix: swift_hash
+  replicas: 3
+  statsd_host: 127.0.0.1
+  swift_zone:
+    openstack1: 1
+    openstack2: 2
+    openstack3: 3
+
+  mysql_root_password: password
+  mysql_sys_maint_user: sys-maint
+  mysql_sys_maint_password: password
+  galera_clustercheck_dbuser: clustercheck
+  galera_clustercheck_dbpassword: clusterpassword!
+  galera_master_name: openstack1
+
+  db_allowed_hosts:
+    - openstack%
+    - 192.168.220.%
+
+  haproxy_auth: root:password
+
+  secret_key: password
+
+  rabbit_password: password
+  rabbit_host: 10.151.0.54
+  rabbit_hosts:
+    - 192.168.220.51:5672
+    - 192.168.220.52:5672
+    - 192.168.220.53:5672
+
+  ks_neutron_password: password
+  neutron_db_password: password
+  ks_neutron_admin_proto: http
+  neutron_type_drivers: gre
+  neutron_mechanism_drivers: openvswitch
+  neutron_tunnel_id_ranges: 1:10000
+  neutron_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+  neutron_metadata_proxy_shared_secret: password
+      
+  ks_nova_password: password
+  nova_db_password: password
+  nova_ssh_public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDTr/nLfmRgaPlnZNz8YV6HTUEDPbhzOtucXE/2F4JA5dFM7+m1wLrXGWW5CU/NO1dV6o/EhlI8188MgxV34EXNeRP/uvlADvVUEZ+OczTXwK7x7ZG4mXolLJoIaTiGtlUpHwJ5vyKZAJKO5g9lnt0P6qzxnYGEljKv+Jma21hXrhD0TRhMH1Dv/xe88dgfwTuD890cTBa5bC9wXqigWMWJ3IgLamcoWRJLfekk8d+Gq/o5m/1NIsbvBuDLAhkbKELnUstrsuexX4MN+htdSxEDPb61h7sSN9BuZTL2OtItPWKM26I8o4d1XwPT96KKQp0Jom066x9O85KVpZHfYMsP danehans@cisco.com
+  nova_ssh_private_key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    CVBSXz4DR5zgyL8ogePBoa9OltBt3ssffs+XHv3lbiGeU18/s3pu2+wajNFjqQay
+    HuJzSPU7qlXl1JdHqFNw58sRIBVoYXOXGmouVaxf/FKIKsFOpixodL6iM1iqaVFX
+    7xWi2qEHGVjYUZX3jxX+gNY72jbYgUroAgCTGDpHZt9BxHXEhKq6qRWxh+aNS5j1
+    xUV+2G0IN9TvxhQhOyDJn96NuQBzY3JWi+BKYdqo8wh80X/ODZaECG/7IMZU/uzl
+    I7B/EzdHGQq+2XQ9ROT6HkFxSgTUz+1BS+c0PO3v0eAymQCjT1pIDzMt5C91ND9m
+    +bUFtvlXLYgHeDCGVfOxB11HvQGq191OGo75tH90kTlMRVCJ0AIp/Shy1zzp009X
+    0CgfuHwGzP/kAKnMMhrvtcStAoH1VRKfoLPnwvkF+h80kioAR11tCsKOERJJtukU
+    uvOGT5rlJD5mshSaQF8C1nBV2C5det4+4HHFfV4vcVKZs7tGk4rNBcfyVr5zfQ2Y
+    CGTUao7+wTWWnWVgxjzFEY+DyYC2147rZoGFOprEUFWgYXZzikNNKY4Mqz1lv0eP
+    iRfT314+5l7YBgCu6DNtKEek/iDe3TGoTpHYybYGrCyDqLwN2+gSWBCo40NgNkTc
+    taQEzTDN/sYWw0mloocUWBEZjxAl3RBM7t6GBEB5yZ8zy4NRlLkFbVBPZE8wSimC
+    iUTd4k4UQeITS+iVkODQdNzvo0RVm+PhOUOuzwPZuF5hqbVH14mA4BV32YEtFvw7
+    ObZv8r0L8slMrD8LnmOLWNY6yzspYHX7zzg911WfbhGo86qi41T/vi1oTJ9GAq76
+    E1ltxzsop1XP41AJhbSkS7u5KtEv6QxD7J34ubQ/WX9KocA8RbItmigmksBvSoKi
+    z/sdBcNl8OD6brzBEWwUtGENQSdeP9P8nyHPysX61X/SlbKE7yYETtaIAtVH+R5W
+    5DVr2XuYLta/tUCWjSyOmrOpovyhInq1JsQY2hqipDdN2QkmeKWNNSH3QCmWzZ/W
+    gCkZQkW2uCkSBlNbncI537Amq6MmypXBCvc2UqRSN7ZkNep3/oGZ+WtBj0XJ76v6
+    JkUEYtVWgBo7VsV+DOoPe64bSq1rsw/zY6N5rxw4pcC5LaSwS813qQKEk7ZFC9t7
+    nWCN+p6vwrc4sVcufD14G2PfIm9uWxeSS8I9YTflr8lEYWY5Gqw9p//tyOA8RP3t
+    kZpTaie92Tm05Qm+C0klypyejkuZ2GegaUGMM3CO3VkSx95qSunqskUt4voUlR+l
+    4c0KM9roTWXlAz7kxE80HVdTucOp/T/zooLJCVtgC/lyu7nxK0MxaciUjNqCzovI
+    iQusIx80qPtZk9jMJgTULIkT/NuxBHa+XKf04I1uaEtaT6bpMKHZx1Ppvi6qahuo
+    lm7Uv2s28tEided51KwB4Hl5Z0CSWb9tm/ScgqYu0m/bQfqosoVDtEJ2NymwEI+5
+    fL2c/LP+vXGbBaE/3n5FQun3zOdKV53hMcLAJ8XPcgZ8NMKKf9zzrcrzBf2dBLRb
+    ppyfprTs3d5mGI08euCdx/DIbt0pSbobdDiunDnGMh2fL0M/5u5Bznzu56K8KBti
+    -----END RSA PRIVATE KEY-----
+
+  glance_db_password: password
+  ks_glance_password: password
+
+  ceilometer_secret: password
+  ks_ceilometer_password: password
+
+  cinder_db_password: password
+  ks_cinder_password: password
+
+  heat_db_password: password
+  ks_heat_password: password
+  heat_auth_encryption_key: password
+  ceph_osd_devices:
+    - sdb
+    - sdc
+    - sdd
+  ceph_fsid: ceph_fsid
+  ceph_mon_secret: password
+  cinder_rbd_pool: volumes
+  cinder_rbd_user: cinder
+
+  libvirt_type: kvm
