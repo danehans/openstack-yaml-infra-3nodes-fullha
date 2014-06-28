@@ -1,10 +1,10 @@
 hosts:
   install-server:
     profile: install-server
-    ip: 10.151.0.48
+    ip: 10.10.10.254
   openstack1:
     profile: all-rbdkey
-    ip: 10.151.68.54
+    ip: 10.10.10.101
     config:
       cloud::storage::rbd::public_network: "%{hiera('ceph_public_network')}"
       cloud::storage::rbd::cluster_network: "%{hiera('ceph_cluster_network')}"
@@ -15,7 +15,7 @@ hosts:
       cloud::object::storage::swift_zone: 1
   openstack2:
     profile: all-osd
-    ip: 10.151.0.55
+    ip: 10.10.10.102
     config:
       cloud::storage::rbd::public_network: "%{hiera('ceph_public_network')}"
       cloud::storage::rbd::cluster_network: "%{hiera('ceph_cluster_network')}"
@@ -25,29 +25,29 @@ hosts:
       cloud::object::storage::swift_zone: 2
   openstack3:
     profile: all-l3
-    ip: 10.151.0.56
+    ip: 10.10.10.103
     config:
       cloud::loadbalancer::keepalived_state: MASTER
       cloud::loadbalancer::keepalived_priority: 50
       cloud::object::storage::swift_zone: 3
 
 config:
-  domain: ring.enovance.com
+  domain: example.com
   user: jenkins
   puppet_master: install-server
   parallel_steps: 2|4|5
-  region: enovance
-  dns_ips: 94.143.114.197
-  vip_public_fqdn: openstack-vip.ring.enovance.com
-  vip_public_ip: 10.151.0.253
-  vip_admin_ip: 10.151.0.253
-  vip_admin_fqdn: openstack-vip.ring.enovance.com
-  vip_internal_fqdn: openstack-vip.ring.enovance.com
+  region: example1
+  dns_ips: 8.8.8.8
+  vip_public_fqdn: openstack-vip.os-mgt.example.com
+  vip_public_ip: 10.10.10.10
+  vip_admin_ip: 10.10.10.10
+  vip_admin_fqdn: openstack-vip.os-mgt.example.com
+  vip_internal_fqdn: openstack-vip.os-mgt.example.com
 
-  public_network: 10.151.0.0/24
-  internal_network: 10.151.0.0/24
-  admin_network: 10.151.0.0/24
-  storage_network: 10.151.0.0/24
+  public_network: 10.10.10.0/24
+  internal_network: 10.10.10.0/24
+  admin_network: 10.10.10.0/24
+  storage_network: 10.10.10.0/24
   
   ntp_servers:
     - 0.debian.pool.ntp.org
@@ -55,7 +55,7 @@ config:
     - 2.debian.pool.ntp.org
     - 3.debian.pool.ntp.org
 
-  root_password: secrete
+  root_password: secret
   
   public_netif: eth0
   internal_netif: eth0
@@ -66,15 +66,15 @@ config:
   external_netif: eth1
 
   keystone_db_user: keystone
-  keystone_db_password: secrete
-  ks_admin_email: dev@enovance.com
-  ks_admin_password: secrete
+  keystone_db_password: secret
+  ks_admin_email: admin@example.com
+  ks_admin_password: secret
   ks_admin_tenant: admin
-  ks_admin_token: secrete
+  ks_admin_token: secret
 
   swift_api: true
-  ks_swift_dispersion_password: secrete
-  ks_swift_password: secrete
+  ks_swift_dispersion_password: secret
+  ks_swift_password: secret
   swift_hash_suffix: ni2aef8ich3oo
   replicas: 3
   statsd_host: 127.0.0.1
@@ -83,63 +83,87 @@ config:
     openstack2: 2
     openstack3: 3
 
-  mysql_root_password: secrete
+  mysql_root_password: secret
   mysql_sys_maint_user: sys-maint
-  mysql_sys_maint_password: secrete
+  mysql_sys_maint_password: secret
   galera_clustercheck_dbuser: clustercheck
   galera_clustercheck_dbpassword: clusterpassword!
   galera_master_name: openstack1
 
   db_allowed_hosts:
     - openstack%
-    - 10.151.0.%
+    - 10.10.10.%
 
-  haproxy_auth: root:secrete
+  haproxy_auth: root:secret
 
-  secret_key: secrete
+  secret_key: secret
 
-  rabbit_password: secrete
-  rabbit_host: 10.151.0.54
+  rabbit_password: secret
+  rabbit_host: 10.10.10.101
   rabbit_hosts:
-    - 10.151.0.54:5672
-    - 10.151.0.55:5672
-    - 10.151.0.56:5672
+    - 10.10.10.101:5672
+    - 10.10.10.102:5672
+    - 10.10.10.103:5672
 
-  ks_neutron_password: secrete
-  neutron_db_password: secrete
+  ks_neutron_password: secret
+  neutron_db_password: secret
   ks_neutron_admin_proto: https
   neutron_type_drivers: gre
   neutron_mechanism_drivers: openvswitch
-  neutron_tunnel_id_ranges: 1:10000
+  neutron_tunnel_id_ranges: 200:300
   neutron_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-  neutron_metadata_proxy_shared_secret: secrete
+  neutron_metadata_proxy_shared_secret: secret
       
-  ks_nova_password: secrete
-  nova_db_password: secrete
-  nova_ssh_public_key: ssh-rsa XXXXX nova@openstack
+  ks_nova_password: secret
+  nova_db_password: secret
+  nova_ssh_public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEMrOdvsBeXovgWYb5V0ohtWePRvgXPVvMUSF6wRjx2u+EqtDkbcFcMqTPDyqiLUvqRJTIE0rAq8PBHeMNoNa3sq8HLxDWmq3qcdvIZ9/xZvHVmtcv/h4iNCcdjCgx38qNklGyJWuNPHGND/PSSaET4Wq7ewTzoM76VninD6dbKdb3kQZ+fjrrgj2GjltsDiecsxl3aXQUWVmQxA93984o8KlzpuAOQ6+a5mNM2wbbh45EgKKNCcctt756CuwVL3W1liYB4pjeuGF7I0vP58qRINuFEW0FvNhg8mwCvOOnxZzU9SjZoNxQSqtBARj1iPzL60KgLPdmwYwPYM1T11/v nova@openstack
   nova_ssh_private_key: |
     -----BEGIN RSA PRIVATE KEY-----
-XXXX
+    MIIEpAIBAAKCAQEAxDKznb7AXl6L4FmG+VdKIbVnj0b4Fz1bzFEhesEY8drvhKrQ
+    5G3BXDKkzw8qoi1L6kSUyBNKwKvDwR3jDaDWt7KvBy8Q1pqt6nHbyGff8Wbx1ZrX
+    L/4eIjQnHYwoMd/KjZJRsiVrjTxxjQ/z0kmhE+Fqu3sE86DO+lZ4pw+nWynW95EG
+    fn4664I9ho5bbA4nnLMZd2l0FFlZkMQPd/fOKPCpc6bgDkOvmuZjTNsG24eORICi
+    jQnHLbe+egrsFS91tZYmAeKY3rhheyNLz+fKkSDbhRFtBbzYYPJsArzjp8Wc1PUo
+    2aDcUEqrQQEY9Yj8y+tCoCz3ZsGMD2DNU9df7wIDAQABAoIBAQCVxlbT/0B/ShHh
+    7LZbNkXDQeaSvAy8QP0JFo5GVY6jYw0h6/yXxSmtJoQmBV/4ejfP2RbzPbb9KqK/
+    k/828ie4CFIRW96w1Vga91xeut18Pagz9oZ7frSmS8XoioxMtpi8RozTQDnAkfnl
+    Q95QFCFBOf3urVT0XzhiZwyoDA0oS4sh6IEx7HWdvo3L4nQdyaCB6rlSttA+qm+9
+    8RgCox+xXwhBx2SieyBjNTNXfogQBvo741PYgaMCxNs1mCppZH/oeTQbiqh0j8KA
+    tzmJnQtQj0DAFYzVESTEMjhCjJGaDi+tV3e0JXyxtowjZuFBOeemB2cbxjXFpbgH
+    xuMx86IxAoGBAPL/ArIRWCdtAi9ZpAjrsSjIaJzJ9JeRTstYMrwV/KXcxiSbV6gY
+    t5FZTNDMn2EBOd6ijQR0yV+2orDDnMrpeSNPh8zK2on54RQV90TFdqOffIsPnmmQ
+    YILkZu7144LWNggM1EpwJusYTHRw0pbEewJOi53H4I9vg5FcvHMVv0ITAoGBAM6y
+    kYb/+cawH5KpJzF5u6g48eV5pEpYJcvGlCPow/RL98qlXflEZoO5J2knDkiO2qf5
+    KBaB1kLTbEwdy52oXb28k+B+F2tR5FW2gHncQ4uYkD0ufHRlapxrtyIwpzYHEyYn
+    +Q3Bfd4lm037oSJ5ShuwT/hWQqKWCITt3FOlzMY1AoGAXYdL+U/1t08c3S7KlWhq
+    iwEASwDstP4H7vqmpIBt+0VLusFT7u58kWRmzaNE4SiAprG4R3PQIpgAbLsN+Yf9
+    yVqOMYQOs7bLLFj8EKtUa8wyOrArUARzMU5KVEWuaSicKWMOvwwF3s0+eD8Iv2Em
+    249x66wIQg0w/d1M55sCP6MCgYAzvWVKSscmYi31E1yZOOStjluW2qUyavBDGxk4
+    B+sNOvrzAgQNAn86190yqDEeHoxDYc4UHDobDjtcrlSqyVt1xD+sAUQxfBVRE1cD
+    qgxKZE0u03UZ2c0fDKOR7mXc01aKxZTFSbsNIZLHqYZDT+MqHS9XdZhGhJHrXHM7
+    iRRCRQKBgQCoTmvMEe2wjb9Qx19t0cEEDEYssh5K096uXzD/JaeKFFNebNuCNFO4
+    jE4WmoCDfNO9hIQ1KHrQLTOBzUv0aiCrEKsM/J+HFpuH6NsgggbuCrYCiZw33cWl
+    MzCUz18ikCdK5meIk2zDTH/ISNYtMdNpdYk84pz9Z7DJ5OHKLShBJQ==
     -----END RSA PRIVATE KEY-----
 
-  glance_db_password: secrete
-  ks_glance_password: secrete
+  glance_db_password: secret
+  ks_glance_password: secret
 
-  ceilometer_secret: secrete
-  ks_ceilometer_password: secrete
+  ceilometer_secret: secret
+  ks_ceilometer_password: secret
 
-  cinder_db_password: secrete
-  ks_cinder_password: secrete
+  cinder_db_password: secret
+  ks_cinder_password: secret
 
-  heat_db_password: secrete
-  ks_heat_password: secrete
-  heat_auth_encryption_key: secrete
+  heat_db_password: secret
+  ks_heat_password: secret
+  heat_auth_encryption_key: secret
   ceph_osd_devices:
     - sdb
     - sdc
     - sdd
-  ceph_fsid: XXXX
-  ceph_mon_secret: secrete
+  ceph_fsid: 5354f7ca-7bde-4b4d-9475-67c2a71be5ee 
+  ceph_mon_secret: secret
   cinder_rbd_pool: volumes
   cinder_rbd_user: cinder
 
